@@ -131,7 +131,7 @@ public class TicketServiceTest {
                 service.findTicket(1)
         );
     }
-
+    // Покупка билета для проверки автоматической сборки Jenkins
     @Test
     void shouldBuyLastAvailableSeatSuccessfully() {
         TicketRepository repository =
