@@ -131,4 +131,41 @@ public class TicketServiceTest {
                 service.findTicket(1)
         );
     }
+
+    @Test
+    void shouldBuyLastAvailableSeatSuccessfully() {
+        TicketRepository repository =
+                new InMemoryTicketRepository();
+
+        TicketService service =
+                new TicketService(repository);
+
+        Event event = new Event(
+                3,
+                "Final Concert",
+                "Minsk Arena",
+                1
+        );
+
+        Customer customer = new Customer(
+                2,
+                "Maria",
+                "maria@example.com"
+        );
+
+        service.buyTicket(
+                10,
+                event,
+                customer
+        );
+
+        assertEquals(
+                0,
+                event.getAvailableSeats()
+        );
+
+        assertNotNull(
+                service.findTicket(10)
+        );
+    }
 }
