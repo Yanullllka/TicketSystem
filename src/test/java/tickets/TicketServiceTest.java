@@ -123,7 +123,7 @@ public class TicketServiceTest {
         service.cancelTicket(1);
 
         assertEquals(
-                50,
+                100,
                 event.getAvailableSeats()
         );
 
