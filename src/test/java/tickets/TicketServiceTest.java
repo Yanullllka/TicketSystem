@@ -3,12 +3,17 @@ package tickets;
 import org.junit.jupiter.api.Test;
 import tickets.model.Customer;
 import tickets.model.Event;
+import tickets.model.Ticket;
 import tickets.repository.InMemoryTicketRepository;
 import tickets.repository.TicketRepository;
 import tickets.service.TicketService;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 public class TicketServiceTest {
 
     @Test
@@ -166,6 +171,51 @@ public class TicketServiceTest {
 
         assertNotNull(
                 service.findTicket(10)
+        );
+    }
+    @Test
+    void shouldLogErrorWhenRepositorySaveFails() {
+
+        TicketRepository failingRepository = new TicketRepository() {
+
+            @Override
+            public void save(Ticket ticket) {
+                throw new RuntimeException("Ошибка сохранения билета");
+            }
+
+            @Override
+            public Ticket findById(int id) {
+                return null;
+            }
+
+            @Override
+            public void delete(int id) {
+            }
+
+            @Override
+            public List<Ticket> findAll() {
+                return new ArrayList<>();
+            }
+        };
+
+        TicketService service = new TicketService(failingRepository);
+
+        Event event = new Event(
+                1,
+                "Концерт",
+                "Минск",
+                10
+        );
+
+        Customer customer = new Customer(
+                1,
+                "Иван",
+                "ivan@example.com"
+        );
+
+        assertThrows(
+                RuntimeException.class,
+                () -> service.buyTicket(1, event, customer)
         );
     }
 }

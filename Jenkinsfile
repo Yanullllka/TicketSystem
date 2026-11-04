@@ -8,6 +8,12 @@ pipeline {
             }
         }
 
+        stage('Static Analysis') {
+            steps {
+                bat '"C:\\Program Files\\JetBrains\\IntelliJ IDEA 2026.2.2\\plugins\\maven-plugin\\lib\\maven3\\bin\\mvn.cmd" checkstyle:check'
+            }
+        }
+
         stage('Test') {
             steps {
                 bat '"C:\\Program Files\\JetBrains\\IntelliJ IDEA 2026.2.2\\plugins\\maven-plugin\\lib\\maven3\\bin\\mvn.cmd" test'
