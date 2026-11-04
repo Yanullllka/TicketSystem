@@ -9,7 +9,7 @@ import tickets.repository.TicketRepository;
 
 public class TicketService {
 
-    private static final Logger logger =
+    private static final Logger LOGGER =
             LoggerFactory.getLogger(TicketService.class);
 
     private final TicketRepository repository;
@@ -24,10 +24,10 @@ public class TicketService {
             Customer customer
     ) {
 
-        logger.info("Запрошена покупка билета. ID билета: {}", ticketId);
+        LOGGER.info("Запрошена покупка билета. ID билета: {}", ticketId);
 
         if (event.getAvailableSeats() <= 0) {
-            logger.warn(
+            LOGGER.warn(
                     "Покупка билета отклонена: нет свободных мест. ID билета: {}",
                     ticketId
             );
@@ -48,7 +48,7 @@ public class TicketService {
 
             repository.save(ticket);
 
-            logger.info(
+            LOGGER.info(
                     "Билет успешно куплен. ID билета: {}",
                     ticketId
             );
@@ -56,7 +56,7 @@ public class TicketService {
             return ticket;
 
         } catch (RuntimeException exception) {
-            logger.error(
+            LOGGER.error(
                     "Ошибка при покупке билета. ID билета: {}",
                     ticketId,
                     exception
@@ -71,7 +71,7 @@ public class TicketService {
         Ticket ticket = repository.findById(ticketId);
 
         if (ticket == null) {
-            logger.warn(
+            LOGGER.warn(
                     "Не удалось отменить билет: билет не найден. ID: {}",
                     ticketId
             );
@@ -87,7 +87,7 @@ public class TicketService {
 
         event.releaseSeat();
 
-        logger.info(
+        LOGGER.info(
                 "Билет успешно отменён. ID билета: {}",
                 ticketId
         );
