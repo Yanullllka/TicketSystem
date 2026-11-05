@@ -26,11 +26,7 @@ public class TicketService {
 
         LOGGER.info("Запрошена покупка билета. ID билета: {}", ticketId);
 
-        if (event.getAvailableSeats() <= 0) {
-            LOGGER.warn(
-                    "Покупка билета отклонена: нет свободных мест. ID билета: {}",
-                    ticketId
-            );
+        if (event.getAvailableSeats() <= 0) {LOGGER.warn("Покупка билета отклонена: нет свободных мест. ID билета: {}", ticketId);
 
             throw new IllegalStateException(
                     "Невозможно купить билет: свободных мест нет"
