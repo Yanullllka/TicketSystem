@@ -1,5 +1,7 @@
 package tickets.service;
 
+import io.micrometer.core.instrument.Timer;
+import monitoring.MetricsConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tickets.model.Customer;
@@ -26,43 +28,67 @@ public class TicketService {
 
         LOGGER.info("Запрошена покупка билета. ID билета: {}", ticketId);
 
-        if (event.getAvailableSeats() <= 0) {
-            LOGGER.warn(
-                    "Покупка билета отклонена: нет свободных мест. ID билета: {}",
-                    ticketId
-            );
+        // Увеличиваем общее количество попыток покупки
+        MetricsConfig.getTotalOperations().increment();
 
-            throw new IllegalStateException(
-                    "Невозможно купить билет: свободных мест нет"
-            );
-        }
+        // Начинаем измерять время выполнения операции
+        Timer.Sample sample = Timer.start(MetricsConfig.getRegistry());
 
         try {
-            event.reserveSeat();
 
-            Ticket ticket = new Ticket(
-                    ticketId,
-                    event,
-                    customer
-            );
+            if (event.getAvailableSeats() <= 0) {
+                LOGGER.warn(
+                        "Покупка билета отклонена: нет свободных мест. ID билета: {}",
+                        ticketId
+                );
 
-            repository.save(ticket);
+                // Увеличиваем количество неудачных покупок
+                MetricsConfig.getErrorPurchases().increment();
 
-            LOGGER.info(
-                    "Билет успешно куплен. ID билета: {}",
-                    ticketId
-            );
+                throw new IllegalStateException(
+                        "Невозможно купить билет: свободных мест нет"
+                );
+            }
 
-            return ticket;
+            try {
+                event.reserveSeat();
 
-        } catch (RuntimeException exception) {
-            LOGGER.error(
-                    "Ошибка при покупке билета. ID билета: {}",
-                    ticketId,
-                    exception
-            );
+                Ticket ticket = new Ticket(
+                        ticketId,
+                        event,
+                        customer
+                );
 
-            throw exception;
+                repository.save(ticket);
+
+                LOGGER.info(
+                        "Билет успешно куплен. ID билета: {}",
+                        ticketId
+                );
+
+                // Увеличиваем количество успешных покупок
+                MetricsConfig.getSuccessfulPurchases().increment();
+
+                return ticket;
+
+            } catch (RuntimeException exception) {
+
+                // Учитываем ошибку при выполнении покупки
+                MetricsConfig.getErrorPurchases().increment();
+
+                LOGGER.error(
+                        "Ошибка при покупке билета. ID билета: {}",
+                        ticketId,
+                        exception
+                );
+
+                throw exception;
+            }
+
+        } finally {
+
+            // Сохраняем время выполнения операции
+            sample.stop(MetricsConfig.getPurchaseDuration());
         }
     }
 
